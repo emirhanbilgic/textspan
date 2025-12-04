@@ -355,11 +355,18 @@ def compute_heatmap_from_embedding(model, prs, image_tensor, text_embedding, dev
         attentions, mlps = prs.finalize(representation)
     
     attention_map = attentions[0, :, 1:, :].sum(axis=(0,2)) @ text_embedding.T
-    
+    # attention_map has shape [num_patches, C]; compute spatial grid size from the model
+    grid_h = model.visual.image_size[0] // model.visual.patch_size[0]
+    grid_w = model.visual.image_size[1] // model.visual.patch_size[1]
+    # Rearrange to [B, C, H, W] and upsample to image resolution
+    attention_map = einops.rearrange(
+        attention_map, '(B N M) C -> B C N M', B=1, N=grid_h, M=grid_w
+    )
     attention_map = F.interpolate(
-        einops.rearrange(attention_map, '(B N M) C -> B C N M', N=16, M=16, B=1), 
-        scale_factor=model.visual.patch_size[0],
-        mode='bilinear'
+        attention_map,
+        size=(model.visual.image_size[0], model.visual.image_size[1]),
+        mode='bilinear',
+        align_corners=False,
     ).to(device)
     
     attention_map = attention_map[0, 0].detach().cpu().numpy()
