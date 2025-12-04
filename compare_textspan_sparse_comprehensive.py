@@ -18,10 +18,13 @@ from nltk.corpus import wordnet as wn
 
 # Configuration
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-pretrained = 'laion2b_s32b_b82k'
-model_name = 'ViT-L-14'
-data_path = '/Users/emirhan/Desktop/clip_text_span/data'
-base_output_path = '/Users/emirhan/Desktop/clip_text_span/comparison_output'
+pretrained = 'laion2b_s34b_b88k'
+model_name = 'ViT-B-16'
+
+# Use paths relative to this file so it runs both locally and on Kaggle
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+data_path = os.path.join(BASE_DIR, 'data')
+base_output_path = os.path.join(BASE_DIR, 'comparison_output')
 
 print(f"Using device: {device}")
 
